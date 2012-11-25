@@ -27,7 +27,7 @@ func main() {
     if romData, err := ioutil.ReadFile(file); err == nil {
         fmt.Println("Loading ROM: " + file)
         ram.Init()
-        rom.Load(romData, &ram)
+        rom.Init(romData, &ram)
         cpu.Init(&ram)
     } else {
         fmt.Println("Error loading ROM: " + err.Error())

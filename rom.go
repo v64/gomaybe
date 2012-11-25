@@ -9,7 +9,7 @@ type Rom struct {
     cartridgeType byte
 }
 
-func (rom *Rom) Load(romData []byte, ram *Ram) {
+func (rom *Rom) Init(romData []byte, ram *Ram) {
     rom.title = string(romData[0x0134:0x0142])
     fmt.Println("Title: " + rom.title)
     rom.cartridgeType = romData[0x0147]
