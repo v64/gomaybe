@@ -2,7 +2,7 @@
 #### A Game Boy emulator written in Go.
 
 Author: Jahn Veach &lt;v64@v64.net&gt;  
-License: MIT (see [LICENSE.txt](https://raw.github.com/v64/gomaybe/master/LICENSE.txt)) 
+License: MIT (see [LICENSE.txt](https://raw.github.com/v64/gomaybe/master/LICENSE.txt))  
 Source: https://github.com/v64/gomaybe  
 
 ### Info
