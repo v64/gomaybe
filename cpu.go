@@ -116,7 +116,7 @@ func (cpu *Cpu) XOR_A(val byte) {
     cpu.SetFlag(FLAG_C, false)
 }
 
-func (cpu *Cpu) Step() (cycleCount int) {
+func (cpu *Cpu) Step() (int) {
     opCode := cpu.ram.Read(cpu.pcReg)
     cpu.pcReg++
     fmt.Printf("OP: 0x%.2X\n", opCode)
@@ -228,9 +228,7 @@ func (cpu *Cpu) Step() (cycleCount int) {
             fmt.Printf("Unknown OP: 0x%.2X\n", opCode)
     }
 
-    cycleCount = opCodeCycles[opCode]
-
-    return
+    return opCodeCycles[opCode]
 }
 
 func bytesToUint16(least byte, most byte) (uint16) {
