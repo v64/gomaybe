@@ -5,7 +5,7 @@ type Ram struct {
 }
 
 func (ram *Ram) Init() {
-    ram.all = make([]byte, 65536, 65536)
+    ram.all = make([]byte, 0x10000, 0x10000)
 }
 
 func (ram *Ram) Read(loc uint16) (byte) {
