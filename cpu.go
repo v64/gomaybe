@@ -12,21 +12,7 @@ const (
 )
 
 var (
-    opCodeCycles map[byte]int
-)
-
-type Cpu struct {
-    aReg, bReg, cReg, dReg, eReg, fReg, hReg, lReg uint8
-    spReg, pcReg uint16
-    ram *Ram
-}
-
-func (cpu *Cpu) Init(ram *Ram) {
-    cpu.spReg = 0xFFFE
-    cpu.pcReg = 0x0100
-    cpu.ram = ram
-
-    opCodeCycles = map[byte]int {
+    opCodeCycles = map[byte]int{
         0xA7: 4,
         0xA0: 4,
         0xA1: 4,
@@ -54,6 +40,18 @@ func (cpu *Cpu) Init(ram *Ram) {
         0x00: 4,
         0xC3: 16,
     }
+)
+
+type Cpu struct {
+    aReg, bReg, cReg, dReg, eReg, fReg, hReg, lReg uint8
+    spReg, pcReg uint16
+    ram *Ram
+}
+
+func (cpu *Cpu) Init(ram *Ram) {
+    cpu.spReg = 0xFFFE
+    cpu.pcReg = 0x0100
+    cpu.ram = ram
 }
 
 func (cpu *Cpu) GetFlag(flag uint8) (result bool) {
