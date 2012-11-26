@@ -1,4 +1,4 @@
-package gomaybe
+package main
 
 import (
     "fmt"
