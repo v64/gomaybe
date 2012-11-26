@@ -36,7 +36,7 @@ func main() {
 
     for {
         cycleCount := cpu.Step()
-        if (cycleCount == 0) {
+        if cycleCount == 0 {
             fmt.Println("Unknown opcode encountered, exiting")
             break
         }

@@ -8,7 +8,7 @@ func (ram *Ram) Init() {
     ram.all = make([]byte, 0x10000, 0x10000)
 }
 
-func (ram *Ram) Read(loc uint16) (byte) {
+func (ram *Ram) Read(loc uint16) byte {
     return ram.all[loc]
 }
 

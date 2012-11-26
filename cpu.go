@@ -57,7 +57,7 @@ func (cpu *Cpu) Init(ram *Ram) {
 }
 
 func (cpu *Cpu) GetFlag(flag uint8) (result bool) {
-    if (cpu.fReg & (1 << flag) == 1) {
+    if cpu.fReg & (1 << flag) == 1 {
         result = true
     } else {
         result = false
@@ -67,7 +67,7 @@ func (cpu *Cpu) GetFlag(flag uint8) (result bool) {
 }
 
 func (cpu *Cpu) SetFlag(flag uint8, set bool) {
-    if (set) {
+    if set {
         cpu.fReg |= 1 << flag
     } else {
         cpu.fReg &^= 1 << flag
@@ -77,7 +77,7 @@ func (cpu *Cpu) SetFlag(flag uint8, set bool) {
 func (cpu *Cpu) AND_A(val byte) {
     cpu.aReg &= val
 
-    if (cpu.aReg == 0) {
+    if cpu.aReg == 0 {
         cpu.SetFlag(FLAG_Z, true)
     } else {
         cpu.SetFlag(FLAG_Z, false)
@@ -91,7 +91,7 @@ func (cpu *Cpu) AND_A(val byte) {
 func (cpu *Cpu) OR_A(val byte) {
     cpu.aReg |= val
 
-    if (cpu.aReg == 0) {
+    if cpu.aReg == 0 {
         cpu.SetFlag(FLAG_Z, true)
     } else {
         cpu.SetFlag(FLAG_Z, false)
@@ -105,7 +105,7 @@ func (cpu *Cpu) OR_A(val byte) {
 func (cpu *Cpu) XOR_A(val byte) {
     cpu.aReg ^= val
 
-    if (cpu.aReg == 0) {
+    if cpu.aReg == 0 {
         cpu.SetFlag(FLAG_Z, true)
     } else {
         cpu.SetFlag(FLAG_Z, false)
@@ -116,7 +116,7 @@ func (cpu *Cpu) XOR_A(val byte) {
     cpu.SetFlag(FLAG_C, false)
 }
 
-func (cpu *Cpu) Step() (int) {
+func (cpu *Cpu) Step() int {
     opCode := cpu.ram.Read(cpu.pcReg)
     cpu.pcReg++
     fmt.Printf("OP: 0x%.2X\n", opCode)
