@@ -4,16 +4,16 @@ import (
     "fmt"
     "io/ioutil"
     "os"
-    "./gm/cpu"
-    "./gm/rom"
-    "./gm/ram"
+    . "./gm/cpu"
+    . "./gm/rom"
+    . "./gm/ram"
 )
 
 func main() {
     var (
-        cpu cpu.Cpu
-        rom rom.Rom
-        ram ram.Ram
+        cpu Cpu
+        rom Rom
+        ram Ram
     )
 
     fmt.Println("GoMaybe")
