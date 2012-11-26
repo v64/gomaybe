@@ -12,6 +12,7 @@ type Rom struct {
 func (rom *Rom) Init(romData []byte, ram *Ram) {
     rom.title = string(romData[0x0134:0x0142])
     fmt.Println("Title: " + rom.title)
+
     rom.cartridgeType = romData[0x0147]
     fmt.Println("Cartridge: " + getCartridgeTypeStr(rom.cartridgeType))
 
