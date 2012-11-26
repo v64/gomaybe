@@ -188,7 +188,7 @@ func (cpu *Cpu) Step() int {
     return opCodeCycles[opCode]
 }
 
-func bytesToUint16(least byte, most byte) (uint16) {
+func bytesToUint16(least byte, most byte) uint16 {
     return uint16(most)<<8 + uint16(least)
 }
 
