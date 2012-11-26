@@ -4,9 +4,9 @@ import (
     "fmt"
     "io/ioutil"
     "os"
-    . "./gm/cpu"
-    . "./gm/rom"
-    . "./gm/ram"
+    . "./gm-lib/cpu"
+    . "./gm-lib/rom"
+    . "./gm-lib/ram"
 )
 
 func main() {
