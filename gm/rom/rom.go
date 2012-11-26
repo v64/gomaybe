@@ -1,7 +1,8 @@
-package main
+package rom
 
 import (
     "fmt"
+    "../ram"
 )
 
 type Rom struct {
@@ -9,7 +10,7 @@ type Rom struct {
     cartridgeType byte
 }
 
-func (rom *Rom) Init(romData []byte, ram *Ram) {
+func (rom *Rom) Init(romData []byte, ram *ram.Ram) {
     rom.title = string(romData[0x0134:0x0142])
     fmt.Println("Title: " + rom.title)
 

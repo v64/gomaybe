@@ -1,4 +1,4 @@
-package main
+package ram
 
 type Ram struct {
     all []byte

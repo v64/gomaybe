@@ -1,7 +1,8 @@
-package main
+package cpu
 
 import (
     "fmt"
+    "../ram"
 )
 
 const (
@@ -45,10 +46,10 @@ var (
 type Cpu struct {
     aReg, bReg, cReg, dReg, eReg, fReg, hReg, lReg uint8
     spReg, pcReg uint16
-    ram *Ram
+    ram *ram.Ram
 }
 
-func (cpu *Cpu) Init(ram *Ram) {
+func (cpu *Cpu) Init(ram *ram.Ram) {
     cpu.spReg = 0xFFFE
     cpu.pcReg = 0x0100
     cpu.ram = ram
