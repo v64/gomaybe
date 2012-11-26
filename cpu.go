@@ -72,48 +72,6 @@ func (cpu *Cpu) SetFlag(flag uint8, set bool) {
     }
 }
 
-func (cpu *Cpu) AND_A(val byte) {
-    cpu.aReg &= val
-
-    if cpu.aReg == 0 {
-        cpu.SetFlag(FLAG_Z, true)
-    } else {
-        cpu.SetFlag(FLAG_Z, false)
-    }
-
-    cpu.SetFlag(FLAG_N, false)
-    cpu.SetFlag(FLAG_H, true)
-    cpu.SetFlag(FLAG_C, false)
-}
-
-func (cpu *Cpu) OR_A(val byte) {
-    cpu.aReg |= val
-
-    if cpu.aReg == 0 {
-        cpu.SetFlag(FLAG_Z, true)
-    } else {
-        cpu.SetFlag(FLAG_Z, false)
-    }
-
-    cpu.SetFlag(FLAG_N, false)
-    cpu.SetFlag(FLAG_H, false)
-    cpu.SetFlag(FLAG_C, false)
-}
-
-func (cpu *Cpu) XOR_A(val byte) {
-    cpu.aReg ^= val
-
-    if cpu.aReg == 0 {
-        cpu.SetFlag(FLAG_Z, true)
-    } else {
-        cpu.SetFlag(FLAG_Z, false)
-    }
-
-    cpu.SetFlag(FLAG_N, false)
-    cpu.SetFlag(FLAG_H, false)
-    cpu.SetFlag(FLAG_C, false)
-}
-
 func (cpu *Cpu) Step() int {
     opCode := cpu.ram.Read(cpu.pcReg)
     cpu.pcReg++
@@ -122,71 +80,71 @@ func (cpu *Cpu) Step() int {
     switch opCode {
         // START 3.3.3.5 AND n
         case 0xA7:
-            cpu.AND_A(cpu.aReg)
+            cpu.and_A(cpu.aReg)
 
         case 0xA0:
-            cpu.AND_A(cpu.bReg)
+            cpu.and_A(cpu.bReg)
 
         case 0xA1:
-            cpu.AND_A(cpu.cReg)
+            cpu.and_A(cpu.cReg)
 
         case 0xA2:
-            cpu.AND_A(cpu.dReg)
+            cpu.and_A(cpu.dReg)
 
         case 0xA3:
-            cpu.AND_A(cpu.eReg)
+            cpu.and_A(cpu.eReg)
 
         case 0xA4:
-            cpu.AND_A(cpu.hReg)
+            cpu.and_A(cpu.hReg)
 
         case 0xA5:
-            cpu.AND_A(cpu.lReg)
+            cpu.and_A(cpu.lReg)
         // END 3.3.3.5 AND n
 
         // START 3.3.3.6 OR n
         case 0xB7:
-            cpu.OR_A(cpu.aReg)
+            cpu.or_A(cpu.aReg)
 
         case 0xB0:
-            cpu.OR_A(cpu.bReg)
+            cpu.or_A(cpu.bReg)
 
         case 0xB1:
-            cpu.OR_A(cpu.cReg)
+            cpu.or_A(cpu.cReg)
 
         case 0xB2:
-            cpu.OR_A(cpu.dReg)
+            cpu.or_A(cpu.dReg)
 
         case 0xB3:
-            cpu.OR_A(cpu.eReg)
+            cpu.or_A(cpu.eReg)
 
         case 0xB4:
-            cpu.OR_A(cpu.hReg)
+            cpu.or_A(cpu.hReg)
 
         case 0xB5:
-            cpu.OR_A(cpu.lReg)
+            cpu.or_A(cpu.lReg)
         // END 3.3.3.6 OR n
 
         // START 3.3.3.7 XOR n
         case 0xAF:
-            cpu.XOR_A(cpu.aReg)
+            cpu.xor_A(cpu.aReg)
 
         case 0xA8:
-            cpu.XOR_A(cpu.bReg)
+            cpu.xor_A(cpu.bReg)
 
         case 0xA9:
-            cpu.XOR_A(cpu.cReg)
+            cpu.xor_A(cpu.cReg)
 
         case 0xAA:
-            cpu.XOR_A(cpu.dReg)
+            cpu.xor_A(cpu.dReg)
 
         case 0xAB:
-            cpu.XOR_A(cpu.eReg)
+            cpu.xor_A(cpu.eReg)
 
         case 0xAC:
-            cpu.XOR_A(cpu.hReg)
+            cpu.xor_A(cpu.hReg)
 
         case 0xAD:
-            cpu.XOR_A(cpu.lReg)
+            cpu.xor_A(cpu.lReg)
         // END 3.3.3.7 XOR n
 
         // START 3.3.5.3 CPL
@@ -231,4 +189,46 @@ func (cpu *Cpu) Step() int {
 
 func bytesToUint16(least byte, most byte) (uint16) {
     return uint16(most)<<8 + uint16(least)
+}
+
+func (cpu *Cpu) and_A(val byte) {
+    cpu.aReg &= val
+
+    if cpu.aReg == 0 {
+        cpu.SetFlag(FLAG_Z, true)
+    } else {
+        cpu.SetFlag(FLAG_Z, false)
+    }
+
+    cpu.SetFlag(FLAG_N, false)
+    cpu.SetFlag(FLAG_H, true)
+    cpu.SetFlag(FLAG_C, false)
+}
+
+func (cpu *Cpu) or_A(val byte) {
+    cpu.aReg |= val
+
+    if cpu.aReg == 0 {
+        cpu.SetFlag(FLAG_Z, true)
+    } else {
+        cpu.SetFlag(FLAG_Z, false)
+    }
+
+    cpu.SetFlag(FLAG_N, false)
+    cpu.SetFlag(FLAG_H, false)
+    cpu.SetFlag(FLAG_C, false)
+}
+
+func (cpu *Cpu) xor_A(val byte) {
+    cpu.aReg ^= val
+
+    if cpu.aReg == 0 {
+        cpu.SetFlag(FLAG_Z, true)
+    } else {
+        cpu.SetFlag(FLAG_Z, false)
+    }
+
+    cpu.SetFlag(FLAG_N, false)
+    cpu.SetFlag(FLAG_H, false)
+    cpu.SetFlag(FLAG_C, false)
 }
