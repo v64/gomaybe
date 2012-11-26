@@ -6,13 +6,13 @@ import (
     "os"
 )
 
-var (
-    cpu Cpu
-    rom Rom
-    ram Ram
-)
-
 func main() {
+    var (
+        cpu Cpu
+        rom Rom
+        ram Ram
+    )
+
     fmt.Println("GoMaybe")
     fmt.Println("Jahn Veach <v64@v64.net>")
     fmt.Println("https://github.com/v64/gomaybe")
