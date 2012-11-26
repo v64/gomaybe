@@ -1,4 +1,4 @@
-package main
+package gomaybe
 
 type Ram struct {
     all []byte
