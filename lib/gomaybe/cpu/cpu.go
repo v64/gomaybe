@@ -13,33 +13,77 @@ const (
 )
 
 var (
-    opCodeCycles = map[byte]int{
-        0xA7: 4,
-        0xA0: 4,
-        0xA1: 4,
-        0xA2: 4,
-        0xA3: 4,
-        0xA4: 4,
-        0xA5: 4,
-        0xB7: 4,
-        0xB0: 4,
-        0xB1: 4,
-        0xB2: 4,
-        0xB3: 4,
-        0xB4: 4,
-        0xB5: 4,
-        0xAF: 4,
-        0xA8: 4,
-        0xA9: 4,
-        0xAA: 4,
-        0xAB: 4,
-        0xAC: 4,
-        0xAD: 4,
-        0x2F: 4,
-        0x3F: 4,
-        0x37: 4,
-        0x00: 4,
-        0xC3: 16,
+    opCodeTable = map[byte]func(cpu *Cpu) int {
+        // START 3.3.3.5 AND n
+        0xA7: func(cpu *Cpu) int { cpu.and_A(cpu.aReg); return 4 },
+        0xA0: func(cpu *Cpu) int { cpu.and_A(cpu.bReg); return 4 },
+        0xA1: func(cpu *Cpu) int { cpu.and_A(cpu.cReg); return 4 },
+        0xA2: func(cpu *Cpu) int { cpu.and_A(cpu.dReg); return 4 },
+        0xA3: func(cpu *Cpu) int { cpu.and_A(cpu.eReg); return 4 },
+        0xA4: func(cpu *Cpu) int { cpu.and_A(cpu.hReg); return 4 },
+        0xA5: func(cpu *Cpu) int { cpu.and_A(cpu.lReg); return 4 },
+        // END 3.3.3.5 AND n
+
+        // START 3.3.3.6 OR n
+        0xB7: func(cpu *Cpu) int { cpu.or_A(cpu.aReg); return 4 },
+        0xB0: func(cpu *Cpu) int { cpu.or_A(cpu.bReg); return 4 },
+        0xB1: func(cpu *Cpu) int { cpu.or_A(cpu.cReg); return 4 },
+        0xB2: func(cpu *Cpu) int { cpu.or_A(cpu.dReg); return 4 },
+        0xB3: func(cpu *Cpu) int { cpu.or_A(cpu.eReg); return 4 },
+        0xB4: func(cpu *Cpu) int { cpu.or_A(cpu.hReg); return 4 },
+        0xB5: func(cpu *Cpu) int { cpu.or_A(cpu.lReg); return 4 },
+        // END 3.3.3.6 OR n
+
+        // START 3.3.3.7 XOR n
+        0xAF: func(cpu *Cpu) int { cpu.xor_A(cpu.aReg); return 4 },
+        0xA8: func(cpu *Cpu) int { cpu.xor_A(cpu.bReg); return 4 },
+        0xA9: func(cpu *Cpu) int { cpu.xor_A(cpu.cReg); return 4 },
+        0xAA: func(cpu *Cpu) int { cpu.xor_A(cpu.dReg); return 4 },
+        0xAB: func(cpu *Cpu) int { cpu.xor_A(cpu.eReg); return 4 },
+        0xAC: func(cpu *Cpu) int { cpu.xor_A(cpu.hReg); return 4 },
+        0xAD: func(cpu *Cpu) int { cpu.xor_A(cpu.lReg); return 4 },
+        // END 3.3.3.7 XOR n
+
+        // START 3.3.5.3 CPL
+        0x2F: func(cpu *Cpu) int {
+            cpu.aReg = ^cpu.aReg
+            cpu.SetFlag(FLAG_N, true)
+            cpu.SetFlag(FLAG_H, true)
+            return 4
+        },
+        // END 3.3.5.3 CPL
+
+        // START 3.3.5.4 CCF
+        0x3F: func(cpu *Cpu) int {
+            cpu.SetFlag(FLAG_N, false)
+            cpu.SetFlag(FLAG_H, false)
+            cpu.SetFlag(FLAG_C, !cpu.GetFlag(FLAG_C))
+            return 4
+        },
+        // END 3.3.5.4 CCF
+
+        // START 3.3.5.5 SCF
+        0x37: func(cpu *Cpu) int {
+            cpu.SetFlag(FLAG_N, false)
+            cpu.SetFlag(FLAG_H, false)
+            cpu.SetFlag(FLAG_C, true)
+            return 4
+        },
+        // END 3.3.5.5 SCF
+
+        // START 3.3.5.6 NOP
+        0x00: func(cpu *Cpu) int { return 4 },
+        // END 3.3.5.6 NOP
+
+        // START 3.3.8.1 JP nn
+        0xC3: func(cpu *Cpu) int {
+            least := cpu.ram.Read(cpu.pcReg)
+            cpu.pcReg++
+            most := cpu.ram.Read(cpu.pcReg)
+            cpu.pcReg = bytesToUint16(least, most)
+            return 16
+        },
+        // END 3.3.8.1 JP nn
     }
 )
 
@@ -55,14 +99,8 @@ func (cpu *Cpu) Init(ram *Ram) {
     cpu.ram = ram
 }
 
-func (cpu *Cpu) GetFlag(flag uint8) (result bool) {
-    if cpu.fReg & (1 << flag) == 1 {
-        result = true
-    } else {
-        result = false
-    }
-
-    return
+func (cpu *Cpu) GetFlag(flag uint8) bool {
+    return cpu.fReg & (1 << flag) == 1
 }
 
 func (cpu *Cpu) SetFlag(flag uint8, set bool) {
@@ -73,119 +111,20 @@ func (cpu *Cpu) SetFlag(flag uint8, set bool) {
     }
 }
 
-func (cpu *Cpu) Step() int {
+func (cpu *Cpu) Step() (cycles int) {
     opCode := cpu.ram.Read(cpu.pcReg)
     cpu.pcReg++
     fmt.Printf("OP: 0x%.2X\n", opCode)
 
-    switch opCode {
-        // START 3.3.3.5 AND n
-        case 0xA7:
-            cpu.and_A(cpu.aReg)
-
-        case 0xA0:
-            cpu.and_A(cpu.bReg)
-
-        case 0xA1:
-            cpu.and_A(cpu.cReg)
-
-        case 0xA2:
-            cpu.and_A(cpu.dReg)
-
-        case 0xA3:
-            cpu.and_A(cpu.eReg)
-
-        case 0xA4:
-            cpu.and_A(cpu.hReg)
-
-        case 0xA5:
-            cpu.and_A(cpu.lReg)
-        // END 3.3.3.5 AND n
-
-        // START 3.3.3.6 OR n
-        case 0xB7:
-            cpu.or_A(cpu.aReg)
-
-        case 0xB0:
-            cpu.or_A(cpu.bReg)
-
-        case 0xB1:
-            cpu.or_A(cpu.cReg)
-
-        case 0xB2:
-            cpu.or_A(cpu.dReg)
-
-        case 0xB3:
-            cpu.or_A(cpu.eReg)
-
-        case 0xB4:
-            cpu.or_A(cpu.hReg)
-
-        case 0xB5:
-            cpu.or_A(cpu.lReg)
-        // END 3.3.3.6 OR n
-
-        // START 3.3.3.7 XOR n
-        case 0xAF:
-            cpu.xor_A(cpu.aReg)
-
-        case 0xA8:
-            cpu.xor_A(cpu.bReg)
-
-        case 0xA9:
-            cpu.xor_A(cpu.cReg)
-
-        case 0xAA:
-            cpu.xor_A(cpu.dReg)
-
-        case 0xAB:
-            cpu.xor_A(cpu.eReg)
-
-        case 0xAC:
-            cpu.xor_A(cpu.hReg)
-
-        case 0xAD:
-            cpu.xor_A(cpu.lReg)
-        // END 3.3.3.7 XOR n
-
-        // START 3.3.5.3 CPL
-        case 0x2F:
-            cpu.aReg = ^cpu.aReg
-            cpu.SetFlag(FLAG_N, true)
-            cpu.SetFlag(FLAG_H, true)
-        // END 3.3.5.3 CPL
-
-        // START 3.3.5.4 CCF
-        case 0x3F:
-            cpu.SetFlag(FLAG_N, false)
-            cpu.SetFlag(FLAG_H, false)
-            cpu.SetFlag(FLAG_C, !cpu.GetFlag(FLAG_C))
-        // END 3.3.5.4 CCF
-
-        // START 3.3.5.5 SCF
-        case 0x37:
-            cpu.SetFlag(FLAG_N, false)
-            cpu.SetFlag(FLAG_H, false)
-            cpu.SetFlag(FLAG_C, true)
-        // END 3.3.5.5 SCF
-
-        // START 3.3.5.6 NOP
-        case 0x00:
-        // END 3.3.5.6 NOP
-
-        // START 3.3.8.1 JP nn
-        case 0xC3:
-            least := cpu.ram.Read(cpu.pcReg)
-            cpu.pcReg++
-            most := cpu.ram.Read(cpu.pcReg)
-            cpu.pcReg = bytesToUint16(least, most)
-        // END 3.3.8.1 JP nn
-
-        default:
-            fmt.Printf("Unknown OP: 0x%.2X\n", opCode)
+    instruction, ok := opCodeTable[opCode]
+    if ok {
+        cycles = instruction(cpu)
+    } else {
+        fmt.Printf("Unknown OP: 0x%.2X\n", opCode)
+        cycles = -1
     }
 
-    return opCodeCycles[opCode]
+    return
 }
 
 func bytesToUint16(least byte, most byte) uint16 {
@@ -194,13 +133,7 @@ func bytesToUint16(least byte, most byte) uint16 {
 
 func (cpu *Cpu) and_A(val byte) {
     cpu.aReg &= val
-
-    if cpu.aReg == 0 {
-        cpu.SetFlag(FLAG_Z, true)
-    } else {
-        cpu.SetFlag(FLAG_Z, false)
-    }
-
+    cpu.SetFlag(FLAG_Z, cpu.aReg == 0)
     cpu.SetFlag(FLAG_N, false)
     cpu.SetFlag(FLAG_H, true)
     cpu.SetFlag(FLAG_C, false)
@@ -208,13 +141,7 @@ func (cpu *Cpu) and_A(val byte) {
 
 func (cpu *Cpu) or_A(val byte) {
     cpu.aReg |= val
-
-    if cpu.aReg == 0 {
-        cpu.SetFlag(FLAG_Z, true)
-    } else {
-        cpu.SetFlag(FLAG_Z, false)
-    }
-
+    cpu.SetFlag(FLAG_Z, cpu.aReg == 0)
     cpu.SetFlag(FLAG_N, false)
     cpu.SetFlag(FLAG_H, false)
     cpu.SetFlag(FLAG_C, false)
@@ -222,13 +149,7 @@ func (cpu *Cpu) or_A(val byte) {
 
 func (cpu *Cpu) xor_A(val byte) {
     cpu.aReg ^= val
-
-    if cpu.aReg == 0 {
-        cpu.SetFlag(FLAG_Z, true)
-    } else {
-        cpu.SetFlag(FLAG_Z, false)
-    }
-
+    cpu.SetFlag(FLAG_Z, cpu.aReg == 0)
     cpu.SetFlag(FLAG_N, false)
     cpu.SetFlag(FLAG_H, false)
     cpu.SetFlag(FLAG_C, false)
