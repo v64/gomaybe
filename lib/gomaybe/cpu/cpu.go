@@ -5,11 +5,17 @@ import (
     . "../ram"
 )
 
+type Cpu struct {
+    aReg, bReg, cReg, dReg, eReg, fReg, hReg, lReg uint8
+    spReg, pcReg uint16
+    ram *Ram
+}
+
 const (
-    FLAG_C = uint8(4)
-    FLAG_H = uint8(5)
-    FLAG_N = uint8(6)
-    FLAG_Z = uint8(7)
+    flag_C = uint8(4)
+    flag_H = uint8(5)
+    flag_N = uint8(6)
+    flag_Z = uint8(7)
 )
 
 var (
@@ -47,26 +53,26 @@ var (
         // START 3.3.5.3 CPL
         0x2F: func(cpu *Cpu) int {
             cpu.aReg = ^cpu.aReg
-            cpu.SetFlag(FLAG_N, true)
-            cpu.SetFlag(FLAG_H, true)
+            cpu.setFlag(flag_N, true)
+            cpu.setFlag(flag_H, true)
             return 4
         },
         // END 3.3.5.3 CPL
 
         // START 3.3.5.4 CCF
         0x3F: func(cpu *Cpu) int {
-            cpu.SetFlag(FLAG_N, false)
-            cpu.SetFlag(FLAG_H, false)
-            cpu.SetFlag(FLAG_C, !cpu.GetFlag(FLAG_C))
+            cpu.setFlag(flag_N, false)
+            cpu.setFlag(flag_H, false)
+            cpu.setFlag(flag_C, !cpu.getFlag(flag_C))
             return 4
         },
         // END 3.3.5.4 CCF
 
         // START 3.3.5.5 SCF
         0x37: func(cpu *Cpu) int {
-            cpu.SetFlag(FLAG_N, false)
-            cpu.SetFlag(FLAG_H, false)
-            cpu.SetFlag(FLAG_C, true)
+            cpu.setFlag(flag_N, false)
+            cpu.setFlag(flag_H, false)
+            cpu.setFlag(flag_C, true)
             return 4
         },
         // END 3.3.5.5 SCF
@@ -87,28 +93,10 @@ var (
     }
 )
 
-type Cpu struct {
-    aReg, bReg, cReg, dReg, eReg, fReg, hReg, lReg uint8
-    spReg, pcReg uint16
-    ram *Ram
-}
-
 func (cpu *Cpu) Init(ram *Ram) {
     cpu.spReg = 0xFFFE
     cpu.pcReg = 0x0100
     cpu.ram = ram
-}
-
-func (cpu *Cpu) GetFlag(flag uint8) bool {
-    return cpu.fReg & (1 << flag) == 1
-}
-
-func (cpu *Cpu) SetFlag(flag uint8, set bool) {
-    if set {
-        cpu.fReg |= 1 << flag
-    } else {
-        cpu.fReg &^= 1 << flag
-    }
 }
 
 func (cpu *Cpu) Step() (cycles int) {
@@ -127,30 +115,42 @@ func (cpu *Cpu) Step() (cycles int) {
     return
 }
 
-func bytesToUint16(least byte, most byte) uint16 {
-    return uint16(most)<<8 + uint16(least)
+func (cpu *Cpu) getFlag(flag uint8) bool {
+    return cpu.fReg & (1 << flag) == 1
+}
+
+func (cpu *Cpu) setFlag(flag uint8, set bool) {
+    if set {
+        cpu.fReg |= 1 << flag
+    } else {
+        cpu.fReg &^= 1 << flag
+    }
 }
 
 func (cpu *Cpu) and_A(val byte) {
     cpu.aReg &= val
-    cpu.SetFlag(FLAG_Z, cpu.aReg == 0)
-    cpu.SetFlag(FLAG_N, false)
-    cpu.SetFlag(FLAG_H, true)
-    cpu.SetFlag(FLAG_C, false)
+    cpu.setFlag(flag_Z, cpu.aReg == 0)
+    cpu.setFlag(flag_N, false)
+    cpu.setFlag(flag_H, true)
+    cpu.setFlag(flag_C, false)
 }
 
 func (cpu *Cpu) or_A(val byte) {
     cpu.aReg |= val
-    cpu.SetFlag(FLAG_Z, cpu.aReg == 0)
-    cpu.SetFlag(FLAG_N, false)
-    cpu.SetFlag(FLAG_H, false)
-    cpu.SetFlag(FLAG_C, false)
+    cpu.setFlag(flag_Z, cpu.aReg == 0)
+    cpu.setFlag(flag_N, false)
+    cpu.setFlag(flag_H, false)
+    cpu.setFlag(flag_C, false)
 }
 
 func (cpu *Cpu) xor_A(val byte) {
     cpu.aReg ^= val
-    cpu.SetFlag(FLAG_Z, cpu.aReg == 0)
-    cpu.SetFlag(FLAG_N, false)
-    cpu.SetFlag(FLAG_H, false)
-    cpu.SetFlag(FLAG_C, false)
+    cpu.setFlag(flag_Z, cpu.aReg == 0)
+    cpu.setFlag(flag_N, false)
+    cpu.setFlag(flag_H, false)
+    cpu.setFlag(flag_C, false)
+}
+
+func bytesToUint16(least byte, most byte) uint16 {
+    return uint16(most)<<8 + uint16(least)
 }
