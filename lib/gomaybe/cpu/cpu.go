@@ -3,6 +3,7 @@ package cpu
 import (
     "fmt"
     . "../ram"
+    "../util"
 )
 
 type Cpu struct {
@@ -29,17 +30,43 @@ var (
         0x2E: func(cpu *Cpu) int { cpu.lReg = cpu.ram.Read(cpu.pcReg); cpu.pcReg++; return 8 },
         // END 3.3.1.1 LD nn,n
 
-        // START 3.3.2.2 LD SP,HL
-        0xF9: func(cpu *Cpu) int { cpu.spReg = bytesToUint16(cpu.lReg, cpu.hReg); return 8 },
-        // END 3.3.2.2 LD SP,HL
+        // START 3.3.1.2 LD r1,r2
+        0x7F: func(cpu *Cpu) int { return 4 },
+        0x78: func(cpu *Cpu) int { cpu.aReg = cpu.bReg; return 4 },
+        0x79: func(cpu *Cpu) int { cpu.aReg = cpu.cReg; return 4 },
+        0x7A: func(cpu *Cpu) int { cpu.aReg = cpu.dReg; return 4 },
+        0x7B: func(cpu *Cpu) int { cpu.aReg = cpu.eReg; return 4 },
+        0x7C: func(cpu *Cpu) int { cpu.aReg = cpu.hReg; return 4 },
+        0x7D: func(cpu *Cpu) int { cpu.aReg = cpu.lReg; return 4 },
+        0x7E: func(cpu *Cpu) int { cpu.aReg = cpu.ram.SplitRead(cpu.hReg, cpu.lReg); return 8 },
+        0x40: func(cpu *Cpu) int { return 4 },
+        0x41: func(cpu *Cpu) int { cpu.bReg = cpu.cReg; return 4 },
+        0x42: func(cpu *Cpu) int { cpu.bReg = cpu.dReg; return 4 },
+        0x43: func(cpu *Cpu) int { cpu.bReg = cpu.eReg; return 4 },
+        0x44: func(cpu *Cpu) int { cpu.bReg = cpu.hReg; return 4 },
+        0x45: func(cpu *Cpu) int { cpu.bReg = cpu.lReg; return 4 },
+        0x46: func(cpu *Cpu) int { cpu.bReg = cpu.ram.SplitRead(cpu.hReg, cpu.lReg); return 8 },
+        0x48: func(cpu *Cpu) int { cpu.cReg = cpu.bReg; return 4 },
+        0x49: func(cpu *Cpu) int { return 4 },
+        0x4A: func(cpu *Cpu) int { cpu.cReg = cpu.dReg; return 4 },
+        0x4B: func(cpu *Cpu) int { cpu.cReg = cpu.eReg; return 4 },
+        0x4C: func(cpu *Cpu) int { cpu.cReg = cpu.hReg; return 4 },
+        0x4D: func(cpu *Cpu) int { cpu.cReg = cpu.lReg; return 4 },
+        0x4E: func(cpu *Cpu) int { cpu.cReg = cpu.ram.SplitRead(cpu.hReg, cpu.lReg); return 8 },
+        0x50: func(cpu *Cpu) int { cpu.dReg = cpu.bReg; return 4 },
+        0x51: func(cpu *Cpu) int { cpu.dReg = cpu.cReg; return 4 },
+        // END 3.3.1.2 LD r1,r2
 
-        // START 3.3.2.5 LD (nn),SP
-        0x08: func(cpu *Cpu) int {
-            cpu.spReg = bytesToUint16(cpu.ram.Read(cpu.pcReg), cpu.ram.Read(cpu.pcReg + 1))
-            cpu.pcReg += 2
-            return 20
-        },
-        // END 3.3.2.5 LD (nn), SP
+        // START 3.3.2.1 LD n,nn
+        0x01: func(cpu *Cpu) int { cpu.bReg, cpu.cReg = cpu.ram.ReadWordSplit(cpu.pcReg); cpu.pcReg += 2; return 12 },
+        0x11: func(cpu *Cpu) int { cpu.dReg, cpu.eReg = cpu.ram.ReadWordSplit(cpu.pcReg); cpu.pcReg += 2; return 12 },
+        0x21: func(cpu *Cpu) int { cpu.hReg, cpu.lReg = cpu.ram.ReadWordSplit(cpu.pcReg); cpu.pcReg += 2; return 12 },
+        0x31: func(cpu *Cpu) int { cpu.spReg = cpu.ram.ReadWord(cpu.pcReg); cpu.pcReg += 2; return 12 },
+        // END 3.3.2.1 LD n,nn
+
+        // START 3.3.2.2 LD SP,HL
+        0xF9: func(cpu *Cpu) int { cpu.spReg = util.B2W(cpu.hReg, cpu.lReg); return 8 },
+        // END 3.3.2.2 LD SP,HL
 
         // START 3.3.3.5 AND n
         0xA7: func(cpu *Cpu) int { cpu.and_A(cpu.aReg); return 4 },
@@ -103,10 +130,7 @@ var (
         // END 3.3.5.6 NOP
 
         // START 3.3.8.1 JP nn
-        0xC3: func(cpu *Cpu) int {
-            cpu.pcReg = bytesToUint16(cpu.ram.Read(cpu.pcReg), cpu.ram.Read(cpu.pcReg + 1))
-            return 16
-        },
+        0xC3: func(cpu *Cpu) int { cpu.pcReg = cpu.ram.ReadWord(cpu.pcReg); return 16 },
         // END 3.3.8.1 JP nn
     }
 )
@@ -167,8 +191,4 @@ func (cpu *Cpu) xor_A(val byte) {
     cpu.setFlag(flag_N, false)
     cpu.setFlag(flag_H, false)
     cpu.setFlag(flag_C, false)
-}
-
-func bytesToUint16(least byte, most byte) uint16 {
-    return uint16(most)<<8 | uint16(least)
 }

@@ -1,5 +1,9 @@
 package ram
 
+import (
+    "../util"
+)
+
 type Ram struct {
     all []byte
 }
@@ -10,6 +14,18 @@ func (ram *Ram) Init() {
 
 func (ram *Ram) Read(loc uint16) byte {
     return ram.all[loc]
+}
+
+func (ram *Ram) ReadWord(loc uint16) uint16 {
+    return util.B2W(ram.all[loc+1], ram.all[loc])
+}
+
+func (ram *Ram) ReadWordSplit(loc uint16) (byte, byte) {
+    return ram.all[loc+1], ram.all[loc]
+}
+
+func (ram *Ram) SplitRead(high byte, low byte) byte {
+    return ram.all[util.B2W(high, low)]
 }
 
 func (ram *Ram) Write(loc uint16, val byte) {
