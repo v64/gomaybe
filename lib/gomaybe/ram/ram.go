@@ -24,10 +24,6 @@ func (ram *Ram) ReadWordSplit(loc uint16) (byte, byte) {
     return ram.all[loc+1], ram.all[loc]
 }
 
-func (ram *Ram) SplitRead(high byte, low byte) byte {
-    return ram.all[util.B2W(high, low)]
-}
-
 func (ram *Ram) Write(loc uint16, val byte) {
     ram.all[loc] = val
 }
