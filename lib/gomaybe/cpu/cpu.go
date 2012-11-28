@@ -35,11 +35,8 @@ var (
 
         // START 3.3.2.5 LD (nn),SP
         0x08: func(cpu *Cpu) int {
-            least := cpu.ram.Read(cpu.pcReg)
-            cpu.pcReg++
-            most := cpu.ram.Read(cpu.pcReg)
-            cpu.pcReg++
-            cpu.spReg = bytesToUint16(least, most)
+            cpu.spReg = bytesToUint16(cpu.ram.Read(cpu.pcReg), cpu.ram.Read(cpu.pcReg + 1))
+            cpu.pcReg += 2
             return 20
         },
         // END 3.3.2.5 LD (nn), SP
@@ -107,10 +104,7 @@ var (
 
         // START 3.3.8.1 JP nn
         0xC3: func(cpu *Cpu) int {
-            least := cpu.ram.Read(cpu.pcReg)
-            cpu.pcReg++
-            most := cpu.ram.Read(cpu.pcReg)
-            cpu.pcReg = bytesToUint16(least, most)
+            cpu.pcReg = bytesToUint16(cpu.ram.Read(cpu.pcReg), cpu.ram.Read(cpu.pcReg + 1))
             return 16
         },
         // END 3.3.8.1 JP nn
@@ -176,5 +170,5 @@ func (cpu *Cpu) xor_A(val byte) {
 }
 
 func bytesToUint16(least byte, most byte) uint16 {
-    return uint16(most)<<8 + uint16(least)
+    return uint16(most)<<8 | uint16(least)
 }
