@@ -31,15 +31,6 @@ var (
         // END 3.3.1.1 LD nn,n
 
         // START 3.3.1.2 LD r1,r2
-        0x7F: func(cpu *Cpu) int { return 4 },
-        0x78: func(cpu *Cpu) int { cpu.aReg = cpu.bReg; return 4 },
-        0x79: func(cpu *Cpu) int { cpu.aReg = cpu.cReg; return 4 },
-        0x7A: func(cpu *Cpu) int { cpu.aReg = cpu.dReg; return 4 },
-        0x7B: func(cpu *Cpu) int { cpu.aReg = cpu.eReg; return 4 },
-        0x7C: func(cpu *Cpu) int { cpu.aReg = cpu.hReg; return 4 },
-        0x7D: func(cpu *Cpu) int { cpu.aReg = cpu.lReg; return 4 },
-        0x7E: func(cpu *Cpu) int { cpu.aReg = cpu.ram.Read(cpu.hlReg()); return 8 },
-
         0x40: func(cpu *Cpu) int { return 4 },
         0x41: func(cpu *Cpu) int { cpu.bReg = cpu.cReg; return 4 },
         0x42: func(cpu *Cpu) int { cpu.bReg = cpu.dReg; return 4 },
@@ -47,6 +38,7 @@ var (
         0x44: func(cpu *Cpu) int { cpu.bReg = cpu.hReg; return 4 },
         0x45: func(cpu *Cpu) int { cpu.bReg = cpu.lReg; return 4 },
         0x46: func(cpu *Cpu) int { cpu.bReg = cpu.ram.Read(cpu.hlReg()); return 8 },
+        0x47: func(cpu *Cpu) int { cpu.bReg = cpu.aReg; return 4 },
 
         0x48: func(cpu *Cpu) int { cpu.cReg = cpu.bReg; return 4 },
         0x49: func(cpu *Cpu) int { return 4 },
@@ -55,6 +47,7 @@ var (
         0x4C: func(cpu *Cpu) int { cpu.cReg = cpu.hReg; return 4 },
         0x4D: func(cpu *Cpu) int { cpu.cReg = cpu.lReg; return 4 },
         0x4E: func(cpu *Cpu) int { cpu.cReg = cpu.ram.Read(cpu.hlReg()); return 8 },
+        0x4F: func(cpu *Cpu) int { cpu.cReg = cpu.aReg; return 4 },
 
         0x50: func(cpu *Cpu) int { cpu.dReg = cpu.bReg; return 4 },
         0x51: func(cpu *Cpu) int { cpu.dReg = cpu.cReg; return 4 },
@@ -63,6 +56,7 @@ var (
         0x54: func(cpu *Cpu) int { cpu.dReg = cpu.hReg; return 4 },
         0x55: func(cpu *Cpu) int { cpu.dReg = cpu.lReg; return 4 },
         0x56: func(cpu *Cpu) int { cpu.dReg = cpu.ram.Read(cpu.hlReg()); return 8 },
+        0x57: func(cpu *Cpu) int { cpu.dReg = cpu.aReg; return 4 },
 
         0x58: func(cpu *Cpu) int { cpu.eReg = cpu.bReg; return 4 },
         0x59: func(cpu *Cpu) int { cpu.eReg = cpu.cReg; return 4 },
@@ -71,6 +65,7 @@ var (
         0x5C: func(cpu *Cpu) int { cpu.eReg = cpu.hReg; return 4 },
         0x5D: func(cpu *Cpu) int { cpu.eReg = cpu.lReg; return 4 },
         0x5E: func(cpu *Cpu) int { cpu.eReg = cpu.ram.Read(cpu.hlReg()); return 8 },
+        0x5F: func(cpu *Cpu) int { cpu.eReg = cpu.aReg; return 4 },
 
         0x60: func(cpu *Cpu) int { cpu.hReg = cpu.bReg; return 4 },
         0x61: func(cpu *Cpu) int { cpu.hReg = cpu.cReg; return 4 },
@@ -79,6 +74,7 @@ var (
         0x64: func(cpu *Cpu) int { return 4 },
         0x65: func(cpu *Cpu) int { cpu.hReg = cpu.lReg; return 4 },
         0x66: func(cpu *Cpu) int { cpu.hReg = cpu.ram.Read(cpu.hlReg()); return 8 },
+        0x67: func(cpu *Cpu) int { cpu.hReg = cpu.aReg; return 4 },
 
         0x68: func(cpu *Cpu) int { cpu.lReg = cpu.bReg; return 4 },
         0x69: func(cpu *Cpu) int { cpu.lReg = cpu.cReg; return 4 },
@@ -87,6 +83,7 @@ var (
         0x6C: func(cpu *Cpu) int { cpu.lReg = cpu.hReg; return 4 },
         0x6D: func(cpu *Cpu) int { return 4 },
         0x6E: func(cpu *Cpu) int { cpu.lReg = cpu.ram.Read(cpu.hlReg()); return 8 },
+        0x6F: func(cpu *Cpu) int { cpu.lReg = cpu.aReg; return 4 },
 
         0x70: func(cpu *Cpu) int { cpu.ram.Write(cpu.hlReg(), cpu.bReg); return 8 },
         0x71: func(cpu *Cpu) int { cpu.ram.Write(cpu.hlReg(), cpu.cReg); return 8 },
@@ -96,6 +93,27 @@ var (
         0x75: func(cpu *Cpu) int { cpu.ram.Write(cpu.hlReg(), cpu.lReg); return 8 },
         0x36: func(cpu *Cpu) int { cpu.ram.Write(cpu.hlReg(), cpu.ram.Read(cpu.pcReg)); cpu.pcReg++; return 12 },
         // END 3.3.1.2 LD r1,r2
+
+        // START 3.3.1.3 LD A,n
+        0x7F: func(cpu *Cpu) int { return 4 },
+        0x78: func(cpu *Cpu) int { cpu.aReg = cpu.bReg; return 4 },
+        0x79: func(cpu *Cpu) int { cpu.aReg = cpu.cReg; return 4 },
+        0x7A: func(cpu *Cpu) int { cpu.aReg = cpu.dReg; return 4 },
+        0x7B: func(cpu *Cpu) int { cpu.aReg = cpu.eReg; return 4 },
+        0x7C: func(cpu *Cpu) int { cpu.aReg = cpu.hReg; return 4 },
+        0x7D: func(cpu *Cpu) int { cpu.aReg = cpu.lReg; return 4 },
+        0x0A: func(cpu *Cpu) int { cpu.aReg = cpu.ram.Read(cpu.bcReg()); return 8 },
+        0x1A: func(cpu *Cpu) int { cpu.aReg = cpu.ram.Read(cpu.deReg()); return 8 },
+        0x7E: func(cpu *Cpu) int { cpu.aReg = cpu.ram.Read(cpu.hlReg()); return 8 },
+        0xFA: func(cpu *Cpu) int { cpu.aReg = cpu.ram.Read(cpu.ram.ReadWord(cpu.pcReg)); cpu.pcReg += 2; return 16 },
+        // END 3.3.1.3 LD A,n
+
+        // START 3.3.1.4 LD n,A
+        0x02: func(cpu *Cpu) int { cpu.ram.Write(cpu.bcReg(), cpu.aReg); return 8 },
+        0x12: func(cpu *Cpu) int { cpu.ram.Write(cpu.deReg(), cpu.aReg); return 8 },
+        0x77: func(cpu *Cpu) int { cpu.ram.Write(cpu.hlReg(), cpu.aReg); return 8 },
+        0xEA: func(cpu *Cpu) int { cpu.ram.Write(cpu.ram.ReadWord(cpu.pcReg), cpu.aReg); cpu.pcReg += 2; return 16 },
+        // END 3.3.1.4 LD n,A
 
         // START 3.3.2.1 LD n,nn
         0x01: func(cpu *Cpu) int { cpu.bReg, cpu.cReg = cpu.ram.ReadWordSplit(cpu.pcReg); cpu.pcReg += 2; return 12 },
