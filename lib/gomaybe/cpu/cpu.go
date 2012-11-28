@@ -65,7 +65,7 @@ var (
         // END 3.3.2.1 LD n,nn
 
         // START 3.3.2.2 LD SP,HL
-        0xF9: func(cpu *Cpu) int { cpu.spReg = util.B2W(cpu.hReg, cpu.lReg); return 8 },
+        0xF9: func(cpu *Cpu) int { cpu.spReg = cpu.hlReg(); return 8 },
         // END 3.3.2.2 LD SP,HL
 
         // START 3.3.3.5 AND n
@@ -191,4 +191,20 @@ func (cpu *Cpu) xor_A(val byte) {
     cpu.setFlag(flag_N, false)
     cpu.setFlag(flag_H, false)
     cpu.setFlag(flag_C, false)
+}
+
+func (cpu *Cpu) afReg() uint16 {
+    return util.B2W(cpu.aReg, cpu.fReg)
+}
+
+func (cpu *Cpu) bcReg() uint16 {
+    return util.B2W(cpu.bReg, cpu.cReg)
+}
+
+func (cpu *Cpu) deReg() uint16 {
+    return util.B2W(cpu.dReg, cpu.eReg)
+}
+
+func (cpu *Cpu) hlReg() uint16 {
+    return util.B2W(cpu.hReg, cpu.lReg)
 }
