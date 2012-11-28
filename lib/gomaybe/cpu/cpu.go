@@ -20,6 +20,30 @@ const (
 
 var (
     opCodeTable = map[byte]func(cpu *Cpu) int {
+        // START 3.3.1.1 LD nn,n
+        0x06: func(cpu *Cpu) int { cpu.bReg = cpu.ram.Read(cpu.pcReg); cpu.pcReg++; return 8 },
+        0x0E: func(cpu *Cpu) int { cpu.cReg = cpu.ram.Read(cpu.pcReg); cpu.pcReg++; return 8 },
+        0x16: func(cpu *Cpu) int { cpu.dReg = cpu.ram.Read(cpu.pcReg); cpu.pcReg++; return 8 },
+        0x1E: func(cpu *Cpu) int { cpu.eReg = cpu.ram.Read(cpu.pcReg); cpu.pcReg++; return 8 },
+        0x26: func(cpu *Cpu) int { cpu.hReg = cpu.ram.Read(cpu.pcReg); cpu.pcReg++; return 8 },
+        0x2E: func(cpu *Cpu) int { cpu.lReg = cpu.ram.Read(cpu.pcReg); cpu.pcReg++; return 8 },
+        // END 3.3.1.1 LD nn,n
+
+        // START 3.3.2.2 LD SP,HL
+        0xF9: func(cpu *Cpu) int { cpu.spReg = bytesToUint16(cpu.lReg, cpu.hReg); return 8 },
+        // END 3.3.2.2 LD SP,HL
+
+        // START 3.3.2.5 LD (nn),SP
+        0x08: func(cpu *Cpu) int {
+            least := cpu.ram.Read(cpu.pcReg)
+            cpu.pcReg++
+            most := cpu.ram.Read(cpu.pcReg)
+            cpu.pcReg++
+            cpu.spReg = bytesToUint16(least, most)
+            return 20
+        },
+        // END 3.3.2.5 LD (nn), SP
+
         // START 3.3.3.5 AND n
         0xA7: func(cpu *Cpu) int { cpu.and_A(cpu.aReg); return 4 },
         0xA0: func(cpu *Cpu) int { cpu.and_A(cpu.bReg); return 4 },
