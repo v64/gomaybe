@@ -17,7 +17,7 @@ func main() {
     )
 
     fmt.Println("GoMaybe")
-    fmt.Println("Jahn Veach <v64@v64.net>")
+    fmt.Println("Jahn Veach <j@hnvea.ch>")
     fmt.Println("https://github.com/v64/gomaybe")
 
     if len(os.Args) < 2 {
