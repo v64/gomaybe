@@ -1,12 +1,12 @@
 package main
 
 import (
+    . "./lib/gomaybe/cpu"
+    . "./lib/gomaybe/ram"
+    . "./lib/gomaybe/rom"
     "fmt"
     "io/ioutil"
     "os"
-    . "./lib/gomaybe/cpu"
-    . "./lib/gomaybe/rom"
-    . "./lib/gomaybe/ram"
 )
 
 func main() {
@@ -25,7 +25,7 @@ func main() {
         return
     }
 
-    file := os.Args[1];
+    file := os.Args[1]
 
     if romData, err := ioutil.ReadFile(file); err == nil {
         fmt.Println("Loading ROM: " + file)

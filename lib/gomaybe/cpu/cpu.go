@@ -1,15 +1,15 @@
 package cpu
 
 import (
-    "fmt"
     . "../ram"
     "../util"
+    "fmt"
 )
 
 type Cpu struct {
     aReg, bReg, cReg, dReg, eReg, fReg, hReg, lReg uint8
-    spReg, pcReg uint16
-    ram *Ram
+    spReg, pcReg                                   uint16
+    ram                                            *Ram
 }
 
 const (
@@ -20,7 +20,7 @@ const (
 )
 
 var (
-    opCodeTable = map[byte]func(cpu *Cpu) int {
+    opCodeTable = map[byte]func(cpu *Cpu) int{
         0x00: func(cpu *Cpu) int { return 4 },
         0x01: func(cpu *Cpu) int { cpu.bReg, cpu.cReg = cpu.ram.ReadWordSplit(cpu.pcReg); cpu.pcReg += 2; return 12 },
         0x02: func(cpu *Cpu) int { cpu.ram.Write(cpu.bcReg(), cpu.aReg); return 8 },
@@ -35,11 +35,26 @@ var (
         0x21: func(cpu *Cpu) int { cpu.hReg, cpu.lReg = cpu.ram.ReadWordSplit(cpu.pcReg); cpu.pcReg += 2; return 12 },
         0x26: func(cpu *Cpu) int { cpu.hReg = cpu.ram.Read(cpu.pcReg); cpu.pcReg++; return 8 },
         0x2E: func(cpu *Cpu) int { cpu.lReg = cpu.ram.Read(cpu.pcReg); cpu.pcReg++; return 8 },
-        0x2F: func(cpu *Cpu) int { cpu.aReg = ^cpu.aReg; cpu.setFlag(flag_N, true); cpu.setFlag(flag_H, true); return 4 },
+        0x2F: func(cpu *Cpu) int {
+            cpu.aReg = ^cpu.aReg
+            cpu.setFlag(flag_N, true)
+            cpu.setFlag(flag_H, true)
+            return 4
+        },
         0x31: func(cpu *Cpu) int { cpu.spReg = cpu.ram.ReadWord(cpu.pcReg); cpu.pcReg += 2; return 12 },
         0x36: func(cpu *Cpu) int { cpu.ram.Write(cpu.hlReg(), cpu.ram.Read(cpu.pcReg)); cpu.pcReg++; return 12 },
-        0x37: func(cpu *Cpu) int { cpu.setFlag(flag_N, false); cpu.setFlag(flag_H, false); cpu.setFlag(flag_C, true); return 4 },
-        0x3F: func(cpu *Cpu) int { cpu.setFlag(flag_N, false); cpu.setFlag(flag_H, false); cpu.setFlag(flag_C, !cpu.getFlag(flag_C)); return 4 },
+        0x37: func(cpu *Cpu) int {
+            cpu.setFlag(flag_N, false)
+            cpu.setFlag(flag_H, false)
+            cpu.setFlag(flag_C, true)
+            return 4
+        },
+        0x3F: func(cpu *Cpu) int {
+            cpu.setFlag(flag_N, false)
+            cpu.setFlag(flag_H, false)
+            cpu.setFlag(flag_C, !cpu.getFlag(flag_C))
+            return 4
+        },
         0x40: func(cpu *Cpu) int { return 4 },
         0x41: func(cpu *Cpu) int { cpu.bReg = cpu.cReg; return 4 },
         0x42: func(cpu *Cpu) int { cpu.bReg = cpu.dReg; return 4 },
@@ -160,7 +175,7 @@ func (cpu *Cpu) Step() (cycles int) {
 }
 
 func (cpu *Cpu) getFlag(flag uint8) bool {
-    return cpu.fReg & (1 << flag) == 1
+    return cpu.fReg&(1<<flag) == 1
 }
 
 func (cpu *Cpu) setFlag(flag uint8, set bool) {
