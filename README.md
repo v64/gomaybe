@@ -13,3 +13,6 @@ Currently a work in progress.
 * Game Boy Development Wiki - http://gbdev.gg8.se/wiki/articles/Main_Page
 * Game Boy CPU Instruction Set - http://www.pastraiser.com/cpu/gameboy/gameboy_opcodes.html
 * Fergulator NES Emulator - https://github.com/scottferg/Fergulator
+* go-gameboy - https://github.com/k19k/go-gameboy
+* GLFW - http://www.glfw.org/
+* go-gl glfw bindings - https://github.com/go-gl/glfw
