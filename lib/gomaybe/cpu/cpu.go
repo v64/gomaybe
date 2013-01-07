@@ -42,6 +42,7 @@ var (
             return 4
         },
         0x31: func(cpu *Cpu) int { cpu.spReg = cpu.ram.ReadWord(cpu.pcReg); cpu.pcReg += 2; return 12 },
+        0x32: func(cpu *Cpu) int { cpu.ram.Write(cpu.hlReg(), cpu.aReg); cpu.chgRegVal("hl", -1); return 8 },
         0x36: func(cpu *Cpu) int { cpu.ram.Write(cpu.hlReg(), cpu.ram.Read(cpu.pcReg)); cpu.pcReg++; return 12 },
         0x37: func(cpu *Cpu) int {
             cpu.setFlag(flag_N, false)
@@ -154,7 +155,7 @@ var (
 
 func (cpu *Cpu) Init(ram *Ram) {
     cpu.spReg = 0xFFFE
-    cpu.pcReg = 0x0100
+    cpu.pcReg = 0x0000
     cpu.ram = ram
 }
 
@@ -224,4 +225,37 @@ func (cpu *Cpu) deReg() uint16 {
 
 func (cpu *Cpu) hlReg() uint16 {
     return util.B2W(cpu.hReg, cpu.lReg)
+}
+
+func (cpu *Cpu) chgRegVal(reg string, chgVal int) {
+    var origVal uint16
+    var highReg *byte
+    var lowReg *byte
+
+    switch reg {
+    case "af":
+        origVal = cpu.afReg()
+        highReg = &cpu.aReg
+        lowReg = &cpu.fReg
+    case "bc":
+        origVal = cpu.bcReg()
+        highReg = &cpu.bReg
+        lowReg = &cpu.cReg
+    case "de":
+        origVal = cpu.deReg()
+        highReg = &cpu.dReg
+        lowReg = &cpu.eReg
+    case "hl":
+        origVal = cpu.hlReg()
+        highReg = &cpu.hReg
+        lowReg = &cpu.lReg
+    }
+
+    if chgVal >= 0 {
+        origVal += uint16(chgVal)
+    } else {
+        origVal -= uint16(chgVal * -1)
+    }
+
+    *highReg, *lowReg = util.W2B(origVal)
 }

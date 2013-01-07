@@ -15,7 +15,7 @@ func (rom *Rom) Init(romData []byte, ram *Ram) {
     fmt.Println("Title: " + rom.title)
 
     rom.cartridgeType = romData[0x0147]
-    fmt.Println("Cartridge: " + getCartridgeTypeStr(rom.cartridgeType))
+    fmt.Println("Cartridge: " + cartridgeTypeStr(rom.cartridgeType))
 
     switch rom.cartridgeType {
     case 0x00:
@@ -23,9 +23,11 @@ func (rom *Rom) Init(romData []byte, ram *Ram) {
     default:
         fmt.Printf("Don't know how to handle cartridge type %.2X\n", rom.cartridgeType)
     }
+
+    ram.WriteStartUp()
 }
 
-func getCartridgeTypeStr(cartridgeType byte) (cartridgeTypeStr string) {
+func cartridgeTypeStr(cartridgeType byte) (cartridgeTypeStr string) {
     switch cartridgeType {
     case 0x00:
         cartridgeTypeStr = "ROM"
