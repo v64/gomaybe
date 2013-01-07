@@ -229,9 +229,8 @@ func (cpu *Cpu) hlReg() uint16 {
 
 func (cpu *Cpu) chgRegVal(reg string, chgVal int) {
     var (
-        origVal uint16
-        highReg *byte
-        lowReg  *byte
+        origVal         uint16
+        highReg, lowReg *byte
     )
 
     switch reg {
