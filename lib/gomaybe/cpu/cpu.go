@@ -151,6 +151,15 @@ var (
         0xF6: func(cpu *Cpu) int { cpu.or_A(cpu.ram.Read(cpu.pcReg)); cpu.pcReg++; return 8 },
         0xF9: func(cpu *Cpu) int { cpu.spReg = cpu.hlReg(); return 8 },
     }
+
+    cbOpCodeTable = map[byte]func(cpu *Cpu) int{
+        0x7C: func(cpu *Cpu) int {
+            cpu.setFlag(flag_Z, !cpu.getBit(cpu.hReg, 7))
+            cpu.setFlag(flag_N, false)
+            cpu.setFlag(flag_H, true)
+            return 8
+        },
+    }
 )
 
 func (cpu *Cpu) Init(ram *Ram) {
@@ -164,7 +173,20 @@ func (cpu *Cpu) Step() (cycles int) {
     cpu.pcReg++
     fmt.Printf("OP: 0x%.2X\n", opCode)
 
-    instruction, ok := opCodeTable[opCode]
+    var (
+        instruction func(cpu *Cpu) int
+        ok          bool
+    )
+
+    if opCode == 0xCB {
+        opCode = cpu.ram.Read(cpu.pcReg)
+        cpu.pcReg++
+        fmt.Printf("OP: 0x%.2X\n", opCode)
+        instruction, ok = cbOpCodeTable[opCode]
+    } else {
+        instruction, ok = opCodeTable[opCode]
+    }
+
     if ok {
         cycles = instruction(cpu)
     } else {
@@ -175,16 +197,24 @@ func (cpu *Cpu) Step() (cycles int) {
     return
 }
 
+func (cpu *Cpu) getBit(val uint8, bit uint8) bool {
+    return val&(1<<bit) == 1
+}
+
+func (cpu *Cpu) setBit(reg *uint8, bit uint8, set bool) {
+    if set {
+        *reg |= 1 << bit
+    } else {
+        *reg &^= 1 << bit
+    }
+}
+
 func (cpu *Cpu) getFlag(flag uint8) bool {
-    return cpu.fReg&(1<<flag) == 1
+    return cpu.getBit(cpu.fReg, flag)
 }
 
 func (cpu *Cpu) setFlag(flag uint8, set bool) {
-    if set {
-        cpu.fReg |= 1 << flag
-    } else {
-        cpu.fReg &^= 1 << flag
-    }
+    cpu.setBit(&cpu.fReg, flag, set)
 }
 
 func (cpu *Cpu) and_A(val byte) {
