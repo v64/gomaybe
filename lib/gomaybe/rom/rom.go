@@ -23,8 +23,6 @@ func (rom *Rom) Init(romData []byte, ram *Ram) {
     default:
         fmt.Printf("Don't know how to handle cartridge type %.2X\n", rom.cartridgeType)
     }
-
-    ram.WriteStartUp()
 }
 
 func cartridgeTypeStr(cartridgeType byte) (cartridgeTypeStr string) {

@@ -32,6 +32,15 @@ var (
         0x16: func(cpu *Cpu) int { cpu.dReg = cpu.ram.Read(cpu.pcReg); cpu.pcReg++; return 8 },
         0x1A: func(cpu *Cpu) int { cpu.aReg = cpu.ram.Read(cpu.deReg()); return 8 },
         0x1E: func(cpu *Cpu) int { cpu.eReg = cpu.ram.Read(cpu.pcReg); cpu.pcReg++; return 8 },
+        0x20: func(cpu *Cpu) int {
+            if !cpu.getFlag(flag_Z) {
+                cpu.pcReg += uint16(int8(cpu.ram.Read(cpu.pcReg))) + 1
+                return 12
+            }
+
+            cpu.pcReg++
+            return 8
+        },
         0x21: func(cpu *Cpu) int { cpu.hReg, cpu.lReg = cpu.ram.ReadWordSplit(cpu.pcReg); cpu.pcReg += 2; return 12 },
         0x26: func(cpu *Cpu) int { cpu.hReg = cpu.ram.Read(cpu.pcReg); cpu.pcReg++; return 8 },
         0x2E: func(cpu *Cpu) int { cpu.lReg = cpu.ram.Read(cpu.pcReg); cpu.pcReg++; return 8 },
@@ -169,19 +178,15 @@ func (cpu *Cpu) Init(ram *Ram) {
 }
 
 func (cpu *Cpu) Step() (cycles int) {
-    opCode := cpu.ram.Read(cpu.pcReg)
-    cpu.pcReg++
-    fmt.Printf("OP: 0x%.2X\n", opCode)
-
     var (
         instruction func(cpu *Cpu) int
         ok          bool
     )
 
+    opCode := cpu.nextOpCode()
+
     if opCode == 0xCB {
-        opCode = cpu.ram.Read(cpu.pcReg)
-        cpu.pcReg++
-        fmt.Printf("OP: 0x%.2X\n", opCode)
+        opCode = cpu.nextOpCode()
         instruction, ok = cbOpCodeTable[opCode]
     } else {
         instruction, ok = opCodeTable[opCode]
@@ -189,6 +194,7 @@ func (cpu *Cpu) Step() (cycles int) {
 
     if ok {
         cycles = instruction(cpu)
+        fmt.Println(cpu)
     } else {
         fmt.Printf("Unknown OP: 0x%.2X\n", opCode)
         cycles = -1
@@ -197,8 +203,20 @@ func (cpu *Cpu) Step() (cycles int) {
     return
 }
 
+func (cpu *Cpu) nextOpCode() (opCode byte) {
+    opCode = cpu.ram.Read(cpu.pcReg)
+    cpu.pcReg++
+    fmt.Printf("OP: 0x%.2X\n", opCode)
+    return
+}
+
+func (cpu *Cpu) String() string {
+    return fmt.Sprintf("pc:0x%.4X sp:0x%.4X a:0x%.2X b:0x%.2X c:0x%.2X d:0x%.2X e:0x%.2X f:0x%.2X h:0x%.2X l:0x%.2X",
+        cpu.pcReg, cpu.spReg, cpu.aReg, cpu.bReg, cpu.cReg, cpu.dReg, cpu.eReg, cpu.fReg, cpu.hReg, cpu.lReg)
+}
+
 func (cpu *Cpu) getBit(val uint8, bit uint8) bool {
-    return val&(1<<bit) == 1
+    return val&(1<<bit) != 0
 }
 
 func (cpu *Cpu) setBit(reg *uint8, bit uint8, set bool) {
