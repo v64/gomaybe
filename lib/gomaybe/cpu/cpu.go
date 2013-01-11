@@ -33,6 +33,7 @@ var (
         0x12: func(cpu *Cpu) int { cpu.ram.Write(cpu.deReg(), cpu.aReg); return 8 },
         0x14: func(cpu *Cpu) int { cpu.incReg(&cpu.dReg); return 4 },
         0x16: func(cpu *Cpu) int { cpu.dReg = cpu.ram.Read(cpu.pcReg); cpu.pcReg++; return 8 },
+        0x17: func(cpu *Cpu) int { cpu.rotateLeft(&cpu.aReg); return 4 },
         0x1A: func(cpu *Cpu) int { cpu.aReg = cpu.ram.Read(cpu.deReg()); return 8 },
         0x1C: func(cpu *Cpu) int { cpu.incReg(&cpu.eReg); return 4 },
         0x1E: func(cpu *Cpu) int { cpu.eReg = cpu.ram.Read(cpu.pcReg); cpu.pcReg++; return 8 },
@@ -57,7 +58,7 @@ var (
             return 4
         },
         0x31: func(cpu *Cpu) int { cpu.spReg = cpu.ram.ReadWord(cpu.pcReg); cpu.pcReg += 2; return 12 },
-        0x32: func(cpu *Cpu) int { cpu.ram.Write(cpu.hlReg(), cpu.aReg); cpu.chgRegVal("hl", -1); return 8 },
+        0x32: func(cpu *Cpu) int { cpu.ram.Write(cpu.hlReg(), cpu.aReg); cpu.setRegVal("hl", cpu.hlReg()-1); return 8 },
         0x36: func(cpu *Cpu) int { cpu.ram.Write(cpu.hlReg(), cpu.ram.Read(cpu.pcReg)); cpu.pcReg++; return 12 },
         0x37: func(cpu *Cpu) int {
             cpu.setFlag(flag_N, false)
@@ -160,23 +161,38 @@ var (
         0xB5: func(cpu *Cpu) int { cpu.or_A(cpu.lReg); return 4 },
         0xB6: func(cpu *Cpu) int { cpu.or_A(cpu.ram.Read(cpu.hlReg())); return 8 },
         0xB7: func(cpu *Cpu) int { cpu.or_A(cpu.aReg); return 4 },
+        0xC1: func(cpu *Cpu) int { cpu.setRegVal("bc", cpu.pop()); return 12 },
         0xC3: func(cpu *Cpu) int { cpu.pcReg = cpu.ram.ReadWord(cpu.pcReg); return 16 },
+        0xC5: func(cpu *Cpu) int { cpu.push(cpu.bcReg()); return 16 },
         0xCD: func(cpu *Cpu) int { cpu.call(); return 24 },
+        0xD1: func(cpu *Cpu) int { cpu.setRegVal("de", cpu.pop()); return 12 },
+        0xD5: func(cpu *Cpu) int { cpu.push(cpu.deReg()); return 16 },
         0xE0: func(cpu *Cpu) int {
             cpu.ram.Write(0xFF00+uint16(cpu.ram.Read(cpu.pcReg)), cpu.aReg)
             cpu.pcReg++
             return 12
         },
+        0xE1: func(cpu *Cpu) int { cpu.setRegVal("hl", cpu.pop()); return 12 },
         0xE2: func(cpu *Cpu) int { cpu.ram.Write(0xFF00+uint16(cpu.cReg), cpu.aReg); return 8 },
+        0xE5: func(cpu *Cpu) int { cpu.push(cpu.hlReg()); return 16 },
         0xE6: func(cpu *Cpu) int { cpu.and_A(cpu.ram.Read(cpu.pcReg)); cpu.pcReg++; return 8 },
         0xEA: func(cpu *Cpu) int { cpu.ram.Write(cpu.ram.ReadWord(cpu.pcReg), cpu.aReg); cpu.pcReg += 2; return 16 },
         0xEE: func(cpu *Cpu) int { cpu.xor_A(cpu.ram.Read(cpu.pcReg)); cpu.pcReg++; return 8 },
+        0xF1: func(cpu *Cpu) int { cpu.setRegVal("af", cpu.pop()); return 12 },
         0xFA: func(cpu *Cpu) int { cpu.aReg = cpu.ram.Read(cpu.ram.ReadWord(cpu.pcReg)); cpu.pcReg += 2; return 16 },
+        0xF5: func(cpu *Cpu) int { cpu.push(cpu.afReg()); return 16 },
         0xF6: func(cpu *Cpu) int { cpu.or_A(cpu.ram.Read(cpu.pcReg)); cpu.pcReg++; return 8 },
         0xF9: func(cpu *Cpu) int { cpu.spReg = cpu.hlReg(); return 8 },
     }
 
     cbOpCodeTable = map[byte]func(cpu *Cpu) int{
+        0x10: func(cpu *Cpu) int { cpu.rotateLeft(&cpu.bReg); return 8 },
+        0x11: func(cpu *Cpu) int { cpu.rotateLeft(&cpu.cReg); return 8 },
+        0x12: func(cpu *Cpu) int { cpu.rotateLeft(&cpu.dReg); return 8 },
+        0x13: func(cpu *Cpu) int { cpu.rotateLeft(&cpu.eReg); return 8 },
+        0x14: func(cpu *Cpu) int { cpu.rotateLeft(&cpu.hReg); return 8 },
+        0x15: func(cpu *Cpu) int { cpu.rotateLeft(&cpu.lReg); return 8 },
+        0x17: func(cpu *Cpu) int { cpu.rotateLeft(&cpu.aReg); return 8 },
         0x7C: func(cpu *Cpu) int {
             cpu.setFlag(flag_Z, !cpu.getBit(cpu.hReg, 7))
             cpu.setFlag(flag_N, false)
@@ -297,38 +313,25 @@ func (cpu *Cpu) hlReg() uint16 {
     return util.B2W(cpu.hReg, cpu.lReg)
 }
 
-func (cpu *Cpu) chgRegVal(reg string, chgVal int) {
-    var (
-        origVal         uint16
-        highReg, lowReg *byte
-    )
+func (cpu *Cpu) setRegVal(reg string, val uint16) {
+    var highReg, lowReg *byte
 
     switch reg {
     case "af":
-        origVal = cpu.afReg()
         highReg = &cpu.aReg
         lowReg = &cpu.fReg
     case "bc":
-        origVal = cpu.bcReg()
         highReg = &cpu.bReg
         lowReg = &cpu.cReg
     case "de":
-        origVal = cpu.deReg()
         highReg = &cpu.dReg
         lowReg = &cpu.eReg
     case "hl":
-        origVal = cpu.hlReg()
         highReg = &cpu.hReg
         lowReg = &cpu.lReg
     }
 
-    if chgVal >= 0 {
-        origVal += uint16(chgVal)
-    } else {
-        origVal -= uint16(chgVal * -1)
-    }
-
-    *highReg, *lowReg = util.W2B(origVal)
+    *highReg, *lowReg = util.W2B(val)
 }
 
 func (cpu *Cpu) push(val uint16) {
@@ -346,4 +349,21 @@ func (cpu *Cpu) call() {
     loc := cpu.ram.ReadWord(cpu.pcReg)
     cpu.push(cpu.pcReg)
     cpu.pcReg = loc
+}
+
+func (cpu *Cpu) rotateLeft(reg *byte) {
+    cpu.setFlag(flag_C, *reg&0x80 == 0x80)
+
+    var carry byte
+    if cpu.getFlag(flag_C) {
+        carry = 1
+    } else {
+        carry = 0
+    }
+
+    *reg = *reg<<1 | carry
+
+    cpu.setFlag(flag_Z, *reg == 0)
+    cpu.setFlag(flag_N, false)
+    cpu.setFlag(flag_H, false)
 }
