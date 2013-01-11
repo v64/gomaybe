@@ -161,7 +161,7 @@ var (
         0xB6: func(cpu *Cpu) int { cpu.or_A(cpu.ram.Read(cpu.hlReg())); return 8 },
         0xB7: func(cpu *Cpu) int { cpu.or_A(cpu.aReg); return 4 },
         0xC3: func(cpu *Cpu) int { cpu.pcReg = cpu.ram.ReadWord(cpu.pcReg); return 16 },
-        0xCD: func(cpu *Cpu) int { cpu.call(); return 12 },
+        0xCD: func(cpu *Cpu) int { cpu.call(); return 24 },
         0xE0: func(cpu *Cpu) int {
             cpu.ram.Write(0xFF00 + uint16(cpu.ram.Read(cpu.pcReg)), cpu.aReg)
             cpu.pcReg++
