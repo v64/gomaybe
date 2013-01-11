@@ -163,11 +163,11 @@ var (
         0xC3: func(cpu *Cpu) int { cpu.pcReg = cpu.ram.ReadWord(cpu.pcReg); return 16 },
         0xCD: func(cpu *Cpu) int { cpu.call(); return 24 },
         0xE0: func(cpu *Cpu) int {
-            cpu.ram.Write(0xFF00 + uint16(cpu.ram.Read(cpu.pcReg)), cpu.aReg)
+            cpu.ram.Write(0xFF00+uint16(cpu.ram.Read(cpu.pcReg)), cpu.aReg)
             cpu.pcReg++
             return 12
         },
-        0xE2: func(cpu *Cpu) int { cpu.ram.Write(0xFF00 + uint16(cpu.cReg), cpu.aReg); return 8 },
+        0xE2: func(cpu *Cpu) int { cpu.ram.Write(0xFF00+uint16(cpu.cReg), cpu.aReg); return 8 },
         0xE6: func(cpu *Cpu) int { cpu.and_A(cpu.ram.Read(cpu.pcReg)); cpu.pcReg++; return 8 },
         0xEA: func(cpu *Cpu) int { cpu.ram.Write(cpu.ram.ReadWord(cpu.pcReg), cpu.aReg); cpu.pcReg += 2; return 16 },
         0xEE: func(cpu *Cpu) int { cpu.xor_A(cpu.ram.Read(cpu.pcReg)); cpu.pcReg++; return 8 },
@@ -278,7 +278,7 @@ func (cpu *Cpu) incReg(reg *byte) {
     *reg += 1
     cpu.setFlag(flag_Z, *reg == 0)
     cpu.setFlag(flag_N, false)
-    cpu.setFlag(flag_H, *reg & 0x0F == 0)
+    cpu.setFlag(flag_H, *reg&0x0F == 0)
 }
 
 func (cpu *Cpu) afReg() uint16 {
