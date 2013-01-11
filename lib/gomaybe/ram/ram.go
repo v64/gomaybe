@@ -53,6 +53,12 @@ func (ram *Ram) Write(loc uint16, val byte) {
     ram.all[loc] = val
 }
 
+func (ram *Ram) WriteWord(loc uint16, val uint16) {
+    most, least := util.W2B(val)
+    ram.all[loc] = least
+    ram.all[loc+1] = most
+}
+
 func (ram *Ram) WriteBlock(loc uint16, vals []byte) {
     copy(ram.all[loc:], vals)
 }

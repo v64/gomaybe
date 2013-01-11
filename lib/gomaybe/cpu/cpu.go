@@ -24,13 +24,17 @@ var (
         0x00: func(cpu *Cpu) int { return 4 },
         0x01: func(cpu *Cpu) int { cpu.bReg, cpu.cReg = cpu.ram.ReadWordSplit(cpu.pcReg); cpu.pcReg += 2; return 12 },
         0x02: func(cpu *Cpu) int { cpu.ram.Write(cpu.bcReg(), cpu.aReg); return 8 },
+        0x04: func(cpu *Cpu) int { cpu.incReg(&cpu.bReg); return 4 },
         0x06: func(cpu *Cpu) int { cpu.bReg = cpu.ram.Read(cpu.pcReg); cpu.pcReg++; return 8 },
         0x0A: func(cpu *Cpu) int { cpu.aReg = cpu.ram.Read(cpu.bcReg()); return 8 },
+        0x0C: func(cpu *Cpu) int { cpu.incReg(&cpu.cReg); return 4 },
         0x0E: func(cpu *Cpu) int { cpu.cReg = cpu.ram.Read(cpu.pcReg); cpu.pcReg++; return 8 },
         0x11: func(cpu *Cpu) int { cpu.dReg, cpu.eReg = cpu.ram.ReadWordSplit(cpu.pcReg); cpu.pcReg += 2; return 12 },
         0x12: func(cpu *Cpu) int { cpu.ram.Write(cpu.deReg(), cpu.aReg); return 8 },
+        0x14: func(cpu *Cpu) int { cpu.incReg(&cpu.dReg); return 4 },
         0x16: func(cpu *Cpu) int { cpu.dReg = cpu.ram.Read(cpu.pcReg); cpu.pcReg++; return 8 },
         0x1A: func(cpu *Cpu) int { cpu.aReg = cpu.ram.Read(cpu.deReg()); return 8 },
+        0x1C: func(cpu *Cpu) int { cpu.incReg(&cpu.eReg); return 4 },
         0x1E: func(cpu *Cpu) int { cpu.eReg = cpu.ram.Read(cpu.pcReg); cpu.pcReg++; return 8 },
         0x20: func(cpu *Cpu) int {
             if !cpu.getFlag(flag_Z) {
@@ -42,7 +46,9 @@ var (
             return 8
         },
         0x21: func(cpu *Cpu) int { cpu.hReg, cpu.lReg = cpu.ram.ReadWordSplit(cpu.pcReg); cpu.pcReg += 2; return 12 },
+        0x24: func(cpu *Cpu) int { cpu.incReg(&cpu.hReg); return 4 },
         0x26: func(cpu *Cpu) int { cpu.hReg = cpu.ram.Read(cpu.pcReg); cpu.pcReg++; return 8 },
+        0x2C: func(cpu *Cpu) int { cpu.incReg(&cpu.lReg); return 4 },
         0x2E: func(cpu *Cpu) int { cpu.lReg = cpu.ram.Read(cpu.pcReg); cpu.pcReg++; return 8 },
         0x2F: func(cpu *Cpu) int {
             cpu.aReg = ^cpu.aReg
@@ -59,6 +65,8 @@ var (
             cpu.setFlag(flag_C, true)
             return 4
         },
+        0x3C: func(cpu *Cpu) int { cpu.incReg(&cpu.aReg); return 4 },
+        0x3E: func(cpu *Cpu) int { cpu.aReg = cpu.ram.Read(cpu.pcReg); cpu.pcReg++; return 8 },
         0x3F: func(cpu *Cpu) int {
             cpu.setFlag(flag_N, false)
             cpu.setFlag(flag_H, false)
@@ -153,6 +161,13 @@ var (
         0xB6: func(cpu *Cpu) int { cpu.or_A(cpu.ram.Read(cpu.hlReg())); return 8 },
         0xB7: func(cpu *Cpu) int { cpu.or_A(cpu.aReg); return 4 },
         0xC3: func(cpu *Cpu) int { cpu.pcReg = cpu.ram.ReadWord(cpu.pcReg); return 16 },
+        0xCD: func(cpu *Cpu) int { cpu.call(); return 12 },
+        0xE0: func(cpu *Cpu) int {
+            cpu.ram.Write(0xFF00 + uint16(cpu.ram.Read(cpu.pcReg)), cpu.aReg)
+            cpu.pcReg++
+            return 12
+        },
+        0xE2: func(cpu *Cpu) int { cpu.ram.Write(0xFF00 + uint16(cpu.cReg), cpu.aReg); return 8 },
         0xE6: func(cpu *Cpu) int { cpu.and_A(cpu.ram.Read(cpu.pcReg)); cpu.pcReg++; return 8 },
         0xEA: func(cpu *Cpu) int { cpu.ram.Write(cpu.ram.ReadWord(cpu.pcReg), cpu.aReg); cpu.pcReg += 2; return 16 },
         0xEE: func(cpu *Cpu) int { cpu.xor_A(cpu.ram.Read(cpu.pcReg)); cpu.pcReg++; return 8 },
@@ -259,6 +274,13 @@ func (cpu *Cpu) xor_A(val byte) {
     cpu.setFlag(flag_C, false)
 }
 
+func (cpu *Cpu) incReg(reg *byte) {
+    *reg += 1
+    cpu.setFlag(flag_Z, *reg == 0)
+    cpu.setFlag(flag_N, false)
+    cpu.setFlag(flag_H, *reg & 0x0F == 0)
+}
+
 func (cpu *Cpu) afReg() uint16 {
     return util.B2W(cpu.aReg, cpu.fReg)
 }
@@ -307,4 +329,21 @@ func (cpu *Cpu) chgRegVal(reg string, chgVal int) {
     }
 
     *highReg, *lowReg = util.W2B(origVal)
+}
+
+func (cpu *Cpu) push(val uint16) {
+    cpu.spReg -= 2
+    cpu.ram.WriteWord(cpu.spReg, val)
+}
+
+func (cpu *Cpu) pop() (val uint16) {
+    val = cpu.ram.ReadWord(cpu.spReg)
+    cpu.spReg += 2
+    return
+}
+
+func (cpu *Cpu) call() {
+    loc := cpu.ram.ReadWord(cpu.pcReg)
+    cpu.push(cpu.pcReg)
+    cpu.pcReg = loc
 }
