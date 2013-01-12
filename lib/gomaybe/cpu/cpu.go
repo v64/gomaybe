@@ -352,7 +352,7 @@ func (cpu *Cpu) call() {
 }
 
 func (cpu *Cpu) rotateLeft(reg *byte) {
-    cpu.setFlag(flag_C, *reg&0x80 == 0x80)
+    oldCarry := *reg&0x80 == 0x80
 
     var carry byte
     if cpu.getFlag(flag_C) {
@@ -366,4 +366,5 @@ func (cpu *Cpu) rotateLeft(reg *byte) {
     cpu.setFlag(flag_Z, *reg == 0)
     cpu.setFlag(flag_N, false)
     cpu.setFlag(flag_H, false)
+    cpu.setFlag(flag_C, oldCarry)
 }
